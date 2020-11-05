@@ -1,6 +1,7 @@
 package edu.uoc.pac3.oauth
 
 import android.R.attr.name
+import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -14,6 +15,7 @@ import edu.uoc.pac3.R
 import edu.uoc.pac3.data.SessionManager
 import edu.uoc.pac3.data.TwitchApiService
 import edu.uoc.pac3.data.oauth.OAuthConstants
+import edu.uoc.pac3.twitch.streams.StreamsActivity
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.json.*
@@ -28,7 +30,7 @@ import kotlinx.coroutines.launch
 class OAuthActivity : AppCompatActivity() {
 
     private val TAG = "OAuthActivity"
-    private var authorizationCode = ""
+    public var authorizationCode = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -107,7 +109,6 @@ class OAuthActivity : AppCompatActivity() {
         progressBar.visibility = View.VISIBLE
 
         // TODO: Create Twitch Service
-        //val httpClient: HttpClient = HttpClient()
         val httpClient = HttpClient(OkHttp) {
             install(JsonFeature) {
                 serializer = KotlinxSerializer()
@@ -117,8 +118,6 @@ class OAuthActivity : AppCompatActivity() {
         val twitchService = TwitchApiService(httpClient)
 
         // TODO: Get Tokens from Twitch
-//        Toast.makeText(applicationContext, "A enviar: " + authorizationCode.toString(),Toast.LENGTH_LONG).show()
-
         var valuesTokens = twitchService.getTokens(authorizationCode)
 
         // TODO: Save access token and refresh token using the SessionManager class
@@ -126,8 +125,21 @@ class OAuthActivity : AppCompatActivity() {
         var accessToken = valuesTokens?.accessToken
         var refreshToken = valuesTokens?.refreshToken
 
-        SessionManager.saveAccessToken()
+        Log.d("OAuth", "accessToken: " + accessToken)
+        Log.d("OAuth", "refreshToken: " + refreshToken)
+        val sharedPreference = SessionManager(this)
+        if (accessToken != null) {
+            sharedPreference.saveAccessToken(accessToken)
+        }
+        if (refreshToken != null) {
+            sharedPreference.saveRefreshToken(refreshToken)
+        }
 
+        // Ir a StreamsActivity
+        val intent = Intent(this, StreamsActivity::class.java)
+        //intent.putExtra("authorizationCode",authorizationCode)
+        intent.putExtra("accessToken",accessToken)
+        startActivity(intent)
 
 
     }

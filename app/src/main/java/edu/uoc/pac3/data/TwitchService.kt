@@ -10,6 +10,7 @@ import edu.uoc.pac3.data.oauth.OAuthTokensResponse
 import edu.uoc.pac3.data.oauth.UnauthorizedException
 import edu.uoc.pac3.data.streams.StreamsResponse
 import edu.uoc.pac3.data.user.User
+import edu.uoc.pac3.oauth.OAuthActivity
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -22,12 +23,13 @@ import io.ktor.http.*
 class TwitchApiService(private val httpClient: HttpClient) {
     private val TAG = "TwitchApiService"
 
+    //Extraigo codigo de autorizacion de OAuthActivity
+//    var mApp = OAuthActivity()
+//    var authCode = mApp.authorizationCode
+
     /// Gets Access and Refresh Tokens on Twitch
-//    suspend fun getTokens(authorizationCode: String): OAuthTokensResponse? {
         suspend fun getTokens(authorizationCode: String): OAuthTokensResponse? {
         // TODO("Get Tokens from Twitch")
-
-        Log.d("OAuth", authorizationCode)
 
         var url = Uri.parse(Endpoints.tokensTwitch)
             .buildUpon()
@@ -38,12 +40,6 @@ class TwitchApiService(private val httpClient: HttpClient) {
             .appendQueryParameter("redirect_uri", OAuthConstants.redirectUri)
             .build()
 
-        // GET
-//        val htmlContent = httpClient.request<String> {
-//            url(url.toString())
-//            method = HttpMethod.Get
-//        }
-
         val response = httpClient.post<OAuthTokensResponse>(url.toString()) {
             headers {
                 append("Authorization", "token")
@@ -52,16 +48,23 @@ class TwitchApiService(private val httpClient: HttpClient) {
         }
 
         return response
-
-        //return htmlContent
-
     }
 
     /// Gets Streams on Twitch
     @Throws(UnauthorizedException::class)
-//    suspend fun getStreams(cursor: String? = null): StreamsResponse? {
-        suspend fun getStreams(cursor: String? = null) {
+    suspend fun getStreams(cursor: String? = null): StreamsResponse? {
+
         // TODO("Get Streams from Twitch")
+        var url = Endpoints.liveStreamsTwitch
+        val response = httpClient.request<StreamsResponse>(url.toString()) {
+                method = HttpMethod.Get
+                headers {
+                    append("Authorization", "Bearer "+ cursor)
+                    append("Client-Id", OAuthConstants.clientID)
+                }
+            }
+        return response
+
         // TODO("Support Pagination")
     }
 
