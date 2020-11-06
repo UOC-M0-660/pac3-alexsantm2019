@@ -23,16 +23,14 @@ class StreamsActivity : AppCompatActivity() {
     private val TAG = "StreamsActivity"
 
     private lateinit var adapter: StreamAdapter
-    private var layoutManager: RecyclerView.LayoutManager? = null
 
-    //private var streamsList: ArrayList<StreamsResponse>?=null
-    val recyclerView = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_streams)
 
-        val accessToken=intent.getStringExtra("accessToken")
+        // Obtengo como parámetro de intent desde login
+        val accessToken = intent.getStringExtra("accessToken")
 
         // Init RecyclerView
         initRecyclerView()
@@ -53,12 +51,17 @@ class StreamsActivity : AppCompatActivity() {
         val twitchService = TwitchApiService(httpClient)
 
         GlobalScope.launch(Dispatchers.Main) {
-            Log.d(TAG, "************* STREAMS ******************* ")
+            Log.d(TAG, "************* STREAMS (*) ******************* ")
             //Log.d(TAG, "STREAMS: " + twitchService.getStreams(accessToken))
+
+            Log.d(TAG, "************* A ENVIAR: *************** " + accessToken)
+            var cursor = null
             var streams = twitchService.getStreams(accessToken)
             //streamsList = twitchService.getStreams(accessToken)
+
             if (streams != null) {
                 Log.d(TAG, "STREAMS: " + streams.data)
+                Log.d(TAG, "STREAMS PAGINATION: " + streams.pagination)
 
                 // Envio streams al Adaptador
                 streams.data?.let { adapter.setStreams(it) }
@@ -76,7 +79,6 @@ class StreamsActivity : AppCompatActivity() {
         // Init Adapter
         adapter = StreamAdapter(emptyList())
         recyclerView.adapter = adapter
-
     }
 
 }

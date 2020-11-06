@@ -13,11 +13,19 @@ data class Stream(
     //val userName: String? = null,
     val user_name: String? = null,
     val title: String? = null,
+    val thumbnail_url: String? = null,
+    //val pagination: String? = null,
+)
+
+@Serializable
+data class StreamPagination(
+    val cursor: String? = null,
 )
 
 @Serializable
 data class StreamsResponse(
     val data: List<Stream>? = null,
+    val pagination: List<StreamPagination>? = null,
     //@SerialName("data")         val data: List<Stream>? = null,
     @SerialName("id")           val id: String? = null,
     @SerialName("user_id")      val user_id: String? = null,
@@ -29,5 +37,5 @@ data class StreamsResponse(
     @SerialName("language")     val language: String? = null,
     @SerialName("thumbnail_url") val thumbnail_url: String? = null,
 //    @SerialName("tag_ids")      val tag_ids: String? = null,
-//    @SerialName("pagination")   val pagination: String? = null,
+   // @SerialName("pagination")   val pagination: String? = null,
 )

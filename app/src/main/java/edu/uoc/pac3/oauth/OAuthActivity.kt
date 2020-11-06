@@ -1,6 +1,5 @@
 package edu.uoc.pac3.oauth
 
-import android.R.attr.name
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -121,12 +120,9 @@ class OAuthActivity : AppCompatActivity() {
         var valuesTokens = twitchService.getTokens(authorizationCode)
 
         // TODO: Save access token and refresh token using the SessionManager class
-        Log.d("OAuth", "Tokens recibidos: " + valuesTokens)
         var accessToken = valuesTokens?.accessToken
         var refreshToken = valuesTokens?.refreshToken
 
-        Log.d("OAuth", "accessToken: " + accessToken)
-        Log.d("OAuth", "refreshToken: " + refreshToken)
         val sharedPreference = SessionManager(this)
         if (accessToken != null) {
             sharedPreference.saveAccessToken(accessToken)
@@ -135,9 +131,11 @@ class OAuthActivity : AppCompatActivity() {
             sharedPreference.saveRefreshToken(refreshToken)
         }
 
+//        var tokenAccedido = sharedPreference.getAccessToken()
+//        Log.d(TAG, "*************************************** tokenAccedido: **********************" + tokenAccedido)
+
         // Ir a StreamsActivity
         val intent = Intent(this, StreamsActivity::class.java)
-        //intent.putExtra("authorizationCode",authorizationCode)
         intent.putExtra("accessToken",accessToken)
         startActivity(intent)
 

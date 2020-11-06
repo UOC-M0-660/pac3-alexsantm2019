@@ -4,8 +4,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import edu.uoc.pac3.R
 
 class StreamAdapter(private var streams: List<Stream>?) : RecyclerView.Adapter<StreamAdapter.ViewHolder>() {
@@ -36,9 +39,20 @@ class StreamAdapter(private var streams: List<Stream>?) : RecyclerView.Adapter<S
         val stream = streams?.get(position)
         if (stream != null) {
             holder.userName.text = stream.user_name
-        }
-        if (stream != null) {
             holder.title.text = stream.title
+            //holder.thumbnailUrl. = stream.thumbnail_url
+            //val pattern = "\\{width}x\\{height}".toRegex()
+            //val pattern = """\{width}\""".toRegex()
+
+
+            //var imageThumbnail = stream.thumbnail_url?.replace(pattern, " XX ")
+            //var imageThumbnail = stream.thumbnail_url
+            Glide.with(holder.thumbnailUrl.getContext())
+                .load(stream.thumbnail_url)
+                //.load(imageThumbnail)
+                .placeholder(R.drawable.ic_user)
+                .apply(RequestOptions().override(600, 200))
+                .into(holder.thumbnailUrl);
         }
     }
 
@@ -46,7 +60,7 @@ class StreamAdapter(private var streams: List<Stream>?) : RecyclerView.Adapter<S
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val userName: TextView = view.findViewById(R.id.tvUserName)
         val title: TextView = view.findViewById(R.id.tvTitle)
-
+        val thumbnailUrl: ImageView = view.findViewById(R.id.ivThumbnail)
 
     }
 
