@@ -1,7 +1,6 @@
 package edu.uoc.pac3.data
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.net.Uri
 import android.util.Log
 import edu.uoc.pac3.data.network.Endpoints
@@ -9,6 +8,7 @@ import edu.uoc.pac3.data.oauth.OAuthConstants
 import edu.uoc.pac3.data.oauth.OAuthTokensResponse
 import edu.uoc.pac3.data.oauth.UnauthorizedException
 import edu.uoc.pac3.data.streams.StreamsResponse
+import edu.uoc.pac3.data.user.UserResponse
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.http.*
@@ -22,8 +22,6 @@ class TwitchApiService(private val httpClient: HttpClient) {
 
     //Extraigo accessToken desde SharedPreferences:
     var context: Context? = null
-
-    //private var sharedPreferences: SharedPreferences? = null
 
     /// Gets Access and Refresh Tokens on Twitch
         suspend fun getTokens(authorizationCode: String): OAuthTokensResponse? {
@@ -49,62 +47,89 @@ class TwitchApiService(private val httpClient: HttpClient) {
 
     /// Gets Streams on Twitch
     @Throws(UnauthorizedException::class)
-//    suspend fun getStreams(cursor: String? = null): StreamsResponse? {
-     suspend fun getStreams(cursor: String? = null, accessToken: String? = null): StreamsResponse? {
+     suspend fun getStreams(cursor: String? = null): StreamsResponse? {
         Log.d(TAG, "************* ENTRE A GETSTREAMS*************** ")
-
-       // var accessToken = context?.let { SessionManager(it).getAccessToken() }
-
-        val sharedPreference = context?.let { SessionManager(it) }
-        var tokenAccedido = sharedPreference?.getAccessToken()      //====================> arreglar
-
-        //var accessToken = sharedPreferences?.getAccessToken()
-//        var accessToken = if (sharedPreferences!!.contains("accessToken")) sharedPreferences!!.getString(
-//            "accessToken",
-//            ""
-//        ) else null
-        Log.d(TAG, "************* FIN ENTRE A GETSTREAMS*************** ")
-        Log.d(TAG, "ACCESS TOKEN: " + accessToken)
 
         // TODO("Get Streams from Twitch")
         if(cursor == null){
+            Log.d(TAG, "************* CURSOR NULO*************** ")
             var url = Endpoints.liveStreamsTwitch
-            val response = httpClient.request<StreamsResponse>(url) {
-                method = HttpMethod.Get
+            val response = httpClient.get<StreamsResponse>(url) {
                 headers {
-                    append("Authorization", "Bearer " + accessToken)
                     append("Client-Id", OAuthConstants.clientID)
                 }
             }
+            Log.d(TAG, "************* FIN CURSOR NULO*************** ")
+
             return response
         }else{
+            // TODO("Support Pagination")
+            Log.d(TAG, "************* CURSOR NO NULO*************** ")
             var urlPagination = Endpoints.liveStreamsTwitch
-            val response = httpClient.request<StreamsResponse>(urlPagination.toString()) {
-                method = HttpMethod.Get
+            val response = httpClient.get<StreamsResponse>(urlPagination.toString()) {
                 headers {
-                    append("first", 20.toString())
-                    append("after", "Bearer " + cursor)
-                    append("Authorization", "Bearer " + tokenAccedido)
+                    append("first", OAuthConstants.FIRST)
+                    append("after", "Bearer $cursor")
                     append("Client-Id", OAuthConstants.clientID)
                 }
             }
+
             return response
         }
-        // TODO("Support Pagination")
 
     }
 
     /// Gets Current Authorized User on Twitch
     @Throws(UnauthorizedException::class)
-//    suspend fun getUser(): User? {
-        suspend fun getUser() {
+    suspend fun getUser(): UserResponse? {
         // TODO("Get User from Twitch")
+        var url = Endpoints.userTwitch
+        val response = httpClient.get<UserResponse>(url) {
+            headers {
+                append("Client-Id", OAuthConstants.clientID)
+            }
+        }
+        return response
     }
 
     /// Gets Current Authorized User on Twitch
     @Throws(UnauthorizedException::class)
-//    suspend fun updateUserDescription(description: String): User? {
-        suspend fun updateUserDescription(description: String) {
+    suspend fun updateUserDescription(description: String): UserResponse? {
         // TODO("Update User Description on Twitch")
+        //var url = Endpoints.userTwitch
+
+        var url = Uri.parse(Endpoints.userTwitch)
+            .buildUpon()
+            .appendQueryParameter("description", description)
+            .build()
+
+        val response = httpClient.put<UserResponse>(url.toString()) {
+            headers {
+                append("Client-Id", OAuthConstants.clientID)
+            }
+        }
+
+//        val response = httpClient.request<UserResponse>(url.toString()) {
+//            method = HttpMethod.Put
+//            headers {
+//                append("Client-Id", OAuthConstants.clientID)
+//            }
+//        }
+
+        return response
     }
+
+    /// Gets Current Authorized User on Twitch
+    @Throws(UnauthorizedException::class)
+    suspend fun revoke(accessToken: String){
+        // TODO("Update User Description on Twitch")
+        var url = Uri.parse(Endpoints.revokeTokensTwitch)
+            .buildUpon()
+            .appendQueryParameter("client_id", OAuthConstants.clientID)
+            .appendQueryParameter("token", accessToken)
+            .build()
+
+        httpClient.post<UserResponse>(url.toString())
+    }
+
 }

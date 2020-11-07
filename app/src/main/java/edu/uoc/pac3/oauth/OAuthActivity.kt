@@ -10,16 +10,13 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import edu.uoc.pac3.R
 import edu.uoc.pac3.data.SessionManager
 import edu.uoc.pac3.data.TwitchApiService
+import edu.uoc.pac3.data.network.Network
 import edu.uoc.pac3.data.oauth.OAuthConstants
 import edu.uoc.pac3.twitch.streams.StreamsActivity
-import io.ktor.client.*
-import io.ktor.client.engine.okhttp.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
-import io.ktor.http.*
 import kotlinx.android.synthetic.main.activity_oauth.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -29,7 +26,6 @@ import kotlinx.coroutines.launch
 class OAuthActivity : AppCompatActivity() {
 
     private val TAG = "OAuthActivity"
-    public var authorizationCode = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +39,7 @@ class OAuthActivity : AppCompatActivity() {
                 .buildUpon()
                 .appendQueryParameter("client_id", OAuthConstants.clientID)
                 .appendQueryParameter("redirect_uri", OAuthConstants.redirectUri)
-                .appendQueryParameter("response_type", "code")
+                .appendQueryParameter("response_type", OAuthConstants.CODE)
                 .appendQueryParameter("scope", OAuthConstants.scopes.joinToString(separator = " "))
                 .appendQueryParameter("state", OAuthConstants.uniqueState)
                 .build()
@@ -57,7 +53,7 @@ class OAuthActivity : AppCompatActivity() {
         // TODO: Set webView Redirect Listener
         webView.webViewClient = object : WebViewClient() {
                 override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-
+                    //Toast.makeText( applicationContext, "shouldOverrideUrlLoading", Toast.LENGTH_SHORT).show()
                 request?.let {
                     // Check if this url is our OAuth redirect, otherwise ignore it
                     if (request.url.toString().startsWith(OAuthConstants.redirectUri)) {
@@ -68,21 +64,18 @@ class OAuthActivity : AppCompatActivity() {
                             // This is our request, obtain the code!
                             request.url.getQueryParameter("code")?.let { code ->
                                 // Got it!
-                                Log.d("OAuth", "Here is the authorization code! $code")
-                                authorizationCode = code
 
-                                GlobalScope.launch(Dispatchers.Main) { onAuthorizationCodeRetrieved(
-                                    authorizationCode
-                                ) }
+                                GlobalScope.launch(Dispatchers.Main) {
+                                    onAuthorizationCodeRetrieved(code)
+
+                                    webView.visibility = View.GONE
+                                    progressBar.visibility = View.VISIBLE
+                                }
 
                             } ?: run {
                                 // User cancelled the login flow
                                 // TODO: Handle error
-                                Toast.makeText(
-                                    applicationContext,
-                                    "No code available",
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                                Toast.makeText( applicationContext, "No code available", Toast.LENGTH_SHORT).show()
                             }
                         }
                     }else{
@@ -108,37 +101,49 @@ class OAuthActivity : AppCompatActivity() {
         progressBar.visibility = View.VISIBLE
 
         // TODO: Create Twitch Service
-        val httpClient = HttpClient(OkHttp) {
-            install(JsonFeature) {
-                serializer = KotlinxSerializer()
-                acceptContentTypes += ContentType("application", "json+hal")
-            }
-        }
-        val twitchService = TwitchApiService(httpClient)
+        val twitchService = TwitchApiService(Network.createHttpClient(this))
 
         // TODO: Get Tokens from Twitch
-        var valuesTokens = twitchService.getTokens(authorizationCode)
+        lifecycleScope.launch {
+            var valuesTokens = twitchService.getTokens(authorizationCode)
 
-        // TODO: Save access token and refresh token using the SessionManager class
-        var accessToken = valuesTokens?.accessToken
-        var refreshToken = valuesTokens?.refreshToken
+            // TODO: Save access token and refresh token using the SessionManager class
+            var accessToken = valuesTokens?.accessToken
+            var refreshToken = valuesTokens?.refreshToken
 
-        val sharedPreference = SessionManager(this)
-        if (accessToken != null) {
-            sharedPreference.saveAccessToken(accessToken)
+            val sharedPreference = SessionManager(this@OAuthActivity)
+            if (accessToken != null) {
+                //Toast.makeText( applicationContext, "accessToken $accessToken", Toast.LENGTH_SHORT).show()
+                sharedPreference.saveAccessToken(accessToken)
+            }
+            if (refreshToken != null) {
+                sharedPreference.saveRefreshToken(refreshToken)
+            }
+            webView.visibility = View.VISIBLE
+            progressBar.visibility = View.GONE
         }
-        if (refreshToken != null) {
-            sharedPreference.saveRefreshToken(refreshToken)
-        }
 
-//        var tokenAccedido = sharedPreference.getAccessToken()
-//        Log.d(TAG, "*************************************** tokenAccedido: **********************" + tokenAccedido)
+        // Pruebas de codigo de acceso
+//        val sharedPreference = SessionManager(this@OAuthActivity)
+//        val acces = sharedPreference.getAccessToken()
+//        Toast.makeText( applicationContext, "accessToken $acces", Toast.LENGTH_SHORT).show()
 
+        // Una vez guardado los tokens, creo intent y paso a StreamActivity
+        goToStreamActivity()
+
+
+    }
+
+    private fun goToStreamActivity() {
         // Ir a StreamsActivity
+
+//        val intent = Intent(this, StreamsActivity::class.java).apply {
+//            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+//        }
+//        startActivity(intent)
+
         val intent = Intent(this, StreamsActivity::class.java)
-        intent.putExtra("accessToken",accessToken)
+        //intent.putExtra("accessToken",accessToken)
         startActivity(intent)
-
-
     }
 }

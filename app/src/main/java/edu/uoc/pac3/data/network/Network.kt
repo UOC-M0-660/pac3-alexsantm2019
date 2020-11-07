@@ -2,6 +2,7 @@ package edu.uoc.pac3.data.network
 
 import android.content.Context
 import android.util.Log
+import edu.uoc.pac3.data.SessionManager
 import io.ktor.client.*
 import io.ktor.client.engine.okhttp.*
 import io.ktor.client.features.*
@@ -18,16 +19,14 @@ import kotlinx.serialization.json.Json
 object Network {
 
     private const val TAG = "Network"
-    val json: String = ""
-
     fun createHttpClient(context: Context): HttpClient {
-        return HttpClient(OkHttp) {
-            // TODO: Setup HttpClient
-            // Json
-            install(JsonFeature) {
 
-                //serializer = KotlinxSerializer(json)
-                serializer = KotlinxSerializer()
+        val accessToken = SessionManager(context).getAccessToken()
+
+        return HttpClient(OkHttp) {
+            // Setup HttpClient
+            install(JsonFeature){
+                serializer = KotlinxSerializer(json)
             }
             // Logging
             install(Logging) {
@@ -46,13 +45,19 @@ object Network {
             }
             // Apply to All Requests
             defaultRequest {
-                parameter("api_key", "some_api_key")
                 // Content Type
                 if (this.method != HttpMethod.Get) contentType(ContentType.Application.Json)
+                if (accessToken != null) {
+                    if (accessToken.isNotEmpty()) header("Authorization", "Bearer $accessToken")
+                }
                 accept(ContentType.Application.Json)
             }
-
         }
     }
 
+    private val json = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+        encodeDefaults = false
+    }
 }

@@ -3,6 +3,8 @@ package edu.uoc.pac3
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
+import com.google.android.material.snackbar.Snackbar
 import edu.uoc.pac3.oauth.LoginActivity
 import edu.uoc.pac3.data.SessionManager
 import edu.uoc.pac3.twitch.streams.StreamsActivity
@@ -11,6 +13,7 @@ class LaunchActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_launch)
+        startActivity(Intent(this, LoginActivity::class.java))
         checkUserSession()
     }
 
