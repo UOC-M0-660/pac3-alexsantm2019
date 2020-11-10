@@ -21,12 +21,14 @@ class SessionManager(context: Context) {
     fun isUserAvailable(): Boolean {
         // TODO: Implement
         return false
+        //return (getAccessToken()?.isNotEmpty() ?: false) && (getRefreshToken()?.isNotEmpty() ?: false)
     }
 
     fun getAccessToken(): String? {
         // TODO: Implement
-        val accessToken = sharedPreferences?.getString(ACCESS_TOKEN, null) //second parameter default value.
-        return accessToken
+//        val accessToken = sharedPreferences?.getString(ACCESS_TOKEN, null)
+//        return accessToken
+        return sharedPreferences.getString(ACCESS_TOKEN, "") ?: ""
     }
 
     fun saveAccessToken(accessToken: String) {
@@ -41,8 +43,9 @@ class SessionManager(context: Context) {
 
     fun getRefreshToken(): String? {
         // TODO("Get Refresh Token")
-        val refreshToken = sharedPreferences?.getString(REFRESH_TOKEN, null) //second parameter default value.
-        return refreshToken
+//        val refreshToken = sharedPreferences?.getString(REFRESH_TOKEN, null) //second parameter default value.
+//        return refreshToken
+        return sharedPreferences.getString(REFRESH_TOKEN, "") ?: ""
 
     }
 

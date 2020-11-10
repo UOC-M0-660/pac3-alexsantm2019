@@ -44,7 +44,7 @@ class ProfileActivity : AppCompatActivity() {
                     val imageThumbnail: ImageView = findViewById(R.id.userImageView)
 
                     userName.text = userInfo[0].display_name
-                    userViewCount.text = userInfo[0].view_count
+                    userViewCount.text = userInfo[0].view_count.toString()
                     userDescription.setText(userInfo[0].description)
 
                     val profileImg = userInfo[0].profile_image_url

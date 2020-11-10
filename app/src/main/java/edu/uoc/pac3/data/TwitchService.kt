@@ -10,6 +10,7 @@ import edu.uoc.pac3.data.oauth.UnauthorizedException
 import edu.uoc.pac3.data.streams.StreamsResponse
 import edu.uoc.pac3.data.user.UserResponse
 import io.ktor.client.*
+import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 
@@ -66,14 +67,14 @@ class TwitchApiService(private val httpClient: HttpClient) {
             // TODO("Support Pagination")
             Log.d(TAG, "************* CURSOR NO NULO*************** ")
             var urlPagination = Endpoints.liveStreamsTwitch
-            val response = httpClient.get<StreamsResponse>(urlPagination.toString()) {
+            val response = httpClient.get<StreamsResponse>(urlPagination) {
                 headers {
                     append("first", OAuthConstants.FIRST)
                     append("after", "Bearer $cursor")
                     append("Client-Id", OAuthConstants.clientID)
                 }
             }
-
+            Log.d(TAG, "************* FIN CURSOR NO NULO*************** ")
             return response
         }
 
@@ -130,6 +131,20 @@ class TwitchApiService(private val httpClient: HttpClient) {
             .build()
 
         httpClient.post<UserResponse>(url.toString())
+    }
+
+    @Throws(ClientRequestException::class)
+    suspend fun getRefreshToken(refreshToken: String): OAuthTokensResponse? {
+        var url = Uri.parse(Endpoints.tokensTwitch)
+            .buildUpon()
+            .appendQueryParameter("client_id", OAuthConstants.clientID)
+            .appendQueryParameter("client_secret", OAuthConstants.secretClientID)
+            .appendQueryParameter("refresh_token", refreshToken)
+            .appendQueryParameter("grant_type", "refresh_token")
+            .build()
+
+        val response = httpClient.post<OAuthTokensResponse>(url.toString())
+        return response
     }
 
 }

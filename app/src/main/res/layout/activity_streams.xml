@@ -18,8 +18,9 @@
             android:layout_height="match_parent"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
-            tools:context=".twitch.streams.StreamsActivity"
-            tools:listitem="@layout/stream_list"/>
+            android:scrollbarSize="7dp"
+            android:scrollbarThumbVertical="@color/colorPrimary"
+            android:scrollbars="vertical"/>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 

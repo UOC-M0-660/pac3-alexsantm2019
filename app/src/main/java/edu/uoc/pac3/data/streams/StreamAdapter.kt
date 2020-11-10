@@ -1,5 +1,6 @@
 package edu.uoc.pac3.data.streams
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,12 +11,21 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import edu.uoc.pac3.R
 
-class StreamAdapter(private var streams: List<Stream>?) : RecyclerView.Adapter<StreamAdapter.ViewHolder>() {
+class StreamAdapter(private var streams: MutableList<Stream>?) : RecyclerView.Adapter<StreamAdapter.ViewHolder>() {
 
-    fun setStreams(streams: List<Stream>) {
+    fun setStreams(streams: MutableList<Stream>) {
         this.streams = streams
         // Reloads the RecyclerView with new adapter data
         notifyDataSetChanged()
+    }
+
+    fun addStreams(streams: List<Stream>){
+        val previousSize = this.streams?.size
+        //this.streams = streams
+        this.streams?.addAll(streams)
+        if (previousSize != null) {
+            notifyItemRangeInserted(previousSize, streams.size)
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
