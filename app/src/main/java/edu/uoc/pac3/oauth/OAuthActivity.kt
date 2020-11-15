@@ -123,24 +123,11 @@ class OAuthActivity : AppCompatActivity() {
             progressBar.visibility = View.GONE
         }
 
-        // Pruebas de codigo de acceso
-//        val sharedPreference = SessionManager(this@OAuthActivity)
-//        val acces = sharedPreference.getAccessToken()
-//        Toast.makeText( applicationContext, "accessToken $acces", Toast.LENGTH_SHORT).show()
-
-        // Una vez guardado los tokens, creo intent y paso a StreamActivity
         goToStreamActivity()
-
-
     }
 
     private fun goToStreamActivity() {
         // Ir a StreamsActivity
-
-//        val intent = Intent(this, StreamsActivity::class.java).apply {
-//            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-//        }
-//        startActivity(intent)
 
         val intent = Intent(this, StreamsActivity::class.java)
         //intent.putExtra("accessToken",accessToken)

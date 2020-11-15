@@ -10,12 +10,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.snackbar.Snackbar
 import edu.uoc.pac3.R
 import edu.uoc.pac3.data.SessionManager
 import edu.uoc.pac3.data.TwitchApiService
 import edu.uoc.pac3.data.network.Network
-import edu.uoc.pac3.data.streams.Stream
 import edu.uoc.pac3.data.streams.StreamAdapter
 import edu.uoc.pac3.data.streams.StreamsResponse
 import edu.uoc.pac3.oauth.LoginActivity
@@ -23,7 +21,6 @@ import edu.uoc.pac3.twitch.profile.ProfileActivity
 import io.ktor.client.features.*
 import kotlinx.android.synthetic.main.activity_streams.*
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 
 class StreamsActivity : AppCompatActivity() {
 
@@ -66,9 +63,9 @@ class StreamsActivity : AppCompatActivity() {
         lifecycleScope.launch {
             // Envio cursor
             val streamsResponse: StreamsResponse?
-            if(cursor == null){
+            if(cursor == null){                     // En caso de que cursor sea nulo
                 streamsResponse = loadStreams()
-            }else{
+            }else{                                  // En caso contrario, lo envio como parametro a funcion loadStreams
                 streamsResponse = loadStreams(cursor)
             }
             streamsResponse?.let {
@@ -93,14 +90,14 @@ class StreamsActivity : AppCompatActivity() {
             streamsResponse = service.getStreams(cursor)
         } catch (e: ClientRequestException) {
             refreshToken(service)
-            val secondInstanceClient = Network.createHttpClient(this@StreamsActivity)
-            val service2 = TwitchApiService(secondInstanceClient)
+            val newInstanceClient = Network.createHttpClient(this)
+            val newService = TwitchApiService(newInstanceClient)
             try {
-                 streamsResponse = service2.getStreams(cursor)
+                 streamsResponse = newService.getStreams(cursor)
             } catch (e: ClientRequestException) {
                 Toast.makeText( applicationContext, "Es necesario hacer logout", Toast.LENGTH_SHORT).show()
             } finally {
-                secondInstanceClient.close()
+                newInstanceClient.close()
             }
         } finally {
             instanceClient.close()
@@ -118,7 +115,6 @@ class StreamsActivity : AppCompatActivity() {
                     if (visibleItemPosition == totalItemCount - 1) {
                         isLoading = true
                         recyclerView.post {
-                            //loadMoreStreams()
                             getStreams()
                         }
                     }
@@ -146,12 +142,19 @@ class StreamsActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.profile -> {
                 val intent = Intent(this, ProfileActivity::class.java)
-                //intent.putExtra("accessToken",accessToken)
                 startActivity(intent)
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun logout(){
+        val sessionManager = SessionManager(this)
+        sessionManager.clearAccessToken()
+        sessionManager.clearRefreshToken()
+        val intent = Intent(this, LoginActivity::class.java)
+        startActivity(intent)
     }
 
     private suspend fun refreshToken(service: TwitchApiService){
@@ -169,110 +172,9 @@ class StreamsActivity : AppCompatActivity() {
             }
         }catch (e: ClientRequestException){
             Toast.makeText( applicationContext, "Ocurrio un error al momento de refrescar Token", Toast.LENGTH_SHORT).show()
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
+            logout()
         }
 
     }
 
 }
-
-
-//    private fun getStreams() { NUEVO
-//        lifecycleScope.launch {
-//            //val streamsResponse = loadStreams()
-//            val streamsResponse: StreamsResponse? = loadStreams()
-//
-//            streamsResponse?.let {
-//                streamsResponse.data?.let {streams->
-//                    adapter.setStreams(streams as MutableList<Stream>)
-//                }
-//                streamsResponse.pagination?.cursor?.let {
-//                    cursor = it
-//                }
-//            }?: run {
-//                Toast.makeText(this@StreamsActivity, getString(R.string.error_streams), Toast.LENGTH_SHORT).show()
-//            }
-//        }
-//    }
-
-//    private fun getStreams() { ANTIGUOL
-//        val service = TwitchApiService(Network.createHttpClient(this))
-//        lifecycleScope.launch {
-//            service.getStreams()?.let { streamsResponse->
-//                Log.d(TAG, "************* DATOS: *************** " + streamsResponse.pagination)
-//                streamsResponse.data?.let { streams->
-//                    adapter.setStreams(streams)
-//                }
-//            }
-//        }
-//    }
-
-//    private fun setUpSteams(){
-//        lifecycleScope.launch {
-//            val streamsResponse = loadStreams()
-//            streamsResponse?.let {
-//                streamsResponse.data?.let {streams->
-//                    adapter.setStreams(streams)
-//                }
-//                streamsResponse.pagination?.cursor?.let {
-//                    cursor = it
-//                }
-//            }?: run {
-//                Toast.makeText(this@StreamsActivity, getString(R.string.error_streams), Toast.LENGTH_SHORT).show()
-//            }
-//        }
-//    }
-
-//    private fun loadMoreStreams(){
-//        lifecycleScope.launch {
-//            val streamsResponse: StreamsResponse? = loadStreams(cursor)     // Envio cursor
-//            streamsResponse?.let {
-//                streamsResponse.data?.let {streams->
-//                    adapter.addStreams(streams)     // Añado mas items a los ya existentes
-//                }
-//                streamsResponse.pagination?.cursor?.let {
-//                    cursor = it
-//                }
-//            }?: run {
-//                Toast.makeText(this@StreamsActivity, getString(R.string.error_streams), Toast.LENGTH_SHORT).show()
-//            }
-//        }
-//        isLoading = false
-//    }
-
-
-
-//        val httpClient = HttpClient(OkHttp) {
-//            install(JsonFeature) {
-//                //serializer = KotlinxSerializer()
-//                //serializer = KotlinxSerializer(KotlinJson { ignoreUnknownKeys = true })
-//                serializer = KotlinxSerializer(KotlinJson {
-//                    isLenient = true
-//                    ignoreUnknownKeys = true
-//                })
-//                acceptContentTypes += ContentType("application", "json+hal")
-//            }
-//        }
-
-
-
-//        val twitchService = TwitchApiService(httpClient)
-//
-//        GlobalScope.launch(Dispatchers.Main) {
-//            Log.d(TAG, "************* STREAMS (*) ******************* ")
-//            //Log.d(TAG, "STREAMS: " + twitchService.getStreams(accessToken))
-//
-//            Log.d(TAG, "************* A ENVIAR: *************** " + accessToken)
-//            var cursor = null
-//            var streams = twitchService.getStreams(accessToken)
-//            //streamsList = twitchService.getStreams(accessToken)
-//
-//            if (streams != null) {
-//                Log.d(TAG, "STREAMS: " + streams.data)
-//                Log.d(TAG, "STREAMS PAGINATION: " + streams.pagination)
-//
-//                // Envio streams al Adaptador
-//                streams.data?.let { adapter.setStreams(it) }
-//            }
-//        }

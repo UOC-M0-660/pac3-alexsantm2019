@@ -1,9 +1,7 @@
 package edu.uoc.pac3.data
 
 import android.content.Context
-import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
-import kotlinx.coroutines.CoroutineScope
 
 /**
  * Created by alex on 06/09/2020.
@@ -20,14 +18,12 @@ class SessionManager(context: Context) {
 
     fun isUserAvailable(): Boolean {
         // TODO: Implement
-        return false
-        //return (getAccessToken()?.isNotEmpty() ?: false) && (getRefreshToken()?.isNotEmpty() ?: false)
+        //return false
+        return (getAccessToken()?.isNotEmpty() ?: false) && (getRefreshToken()?.isNotEmpty() ?: false)
     }
 
     fun getAccessToken(): String? {
         // TODO: Implement
-//        val accessToken = sharedPreferences?.getString(ACCESS_TOKEN, null)
-//        return accessToken
         return sharedPreferences.getString(ACCESS_TOKEN, "") ?: ""
     }
 
@@ -43,8 +39,6 @@ class SessionManager(context: Context) {
 
     fun getRefreshToken(): String? {
         // TODO("Get Refresh Token")
-//        val refreshToken = sharedPreferences?.getString(REFRESH_TOKEN, null) //second parameter default value.
-//        return refreshToken
         return sharedPreferences.getString(REFRESH_TOKEN, "") ?: ""
 
     }

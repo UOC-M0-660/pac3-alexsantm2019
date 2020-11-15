@@ -1,6 +1,5 @@
 package edu.uoc.pac3.data.streams
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,7 +20,6 @@ class StreamAdapter(private var streams: MutableList<Stream>?) : RecyclerView.Ad
 
     fun addStreams(streams: List<Stream>){
         val previousSize = this.streams?.size
-        //this.streams = streams
         this.streams?.addAll(streams)
         if (previousSize != null) {
             notifyItemRangeInserted(previousSize, streams.size)

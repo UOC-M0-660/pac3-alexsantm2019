@@ -16,7 +16,6 @@ import edu.uoc.pac3.R
 import edu.uoc.pac3.data.SessionManager
 import edu.uoc.pac3.data.TwitchApiService
 import edu.uoc.pac3.data.network.Network
-import kotlinx.android.synthetic.main.activity_oauth.*
 import kotlinx.coroutines.launch
 
 class ProfileActivity : AppCompatActivity() {

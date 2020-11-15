@@ -1,8 +1,6 @@
 package edu.uoc.pac3.data
 
-import android.content.Context
 import android.net.Uri
-import android.util.Log
 import edu.uoc.pac3.data.network.Endpoints
 import edu.uoc.pac3.data.oauth.OAuthConstants
 import edu.uoc.pac3.data.oauth.OAuthTokensResponse
@@ -12,7 +10,6 @@ import edu.uoc.pac3.data.user.UserResponse
 import io.ktor.client.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
-import io.ktor.http.*
 
 /**
  * Created by alex on 24/10/2020.
@@ -21,10 +18,8 @@ import io.ktor.http.*
 class TwitchApiService(private val httpClient: HttpClient) {
     private val TAG = "TwitchApiService"
 
-    //Extraigo accessToken desde SharedPreferences:
-    var context: Context? = null
-
     /// Gets Access and Refresh Tokens on Twitch
+        @Throws(ClientRequestException::class)
         suspend fun getTokens(authorizationCode: String): OAuthTokensResponse? {
         // TODO("Get Tokens from Twitch")
 
@@ -49,23 +44,18 @@ class TwitchApiService(private val httpClient: HttpClient) {
     /// Gets Streams on Twitch
     @Throws(UnauthorizedException::class)
      suspend fun getStreams(cursor: String? = null): StreamsResponse? {
-        Log.d(TAG, "************* ENTRE A GETSTREAMS*************** ")
 
         // TODO("Get Streams from Twitch")
         if(cursor == null){
-            Log.d(TAG, "************* CURSOR NULO*************** ")
             var url = Endpoints.liveStreamsTwitch
             val response = httpClient.get<StreamsResponse>(url) {
                 headers {
                     append("Client-Id", OAuthConstants.clientID)
                 }
             }
-            Log.d(TAG, "************* FIN CURSOR NULO*************** ")
-
             return response
         }else{
             // TODO("Support Pagination")
-            Log.d(TAG, "************* CURSOR NO NULO*************** ")
             var urlPagination = Endpoints.liveStreamsTwitch
             val response = httpClient.get<StreamsResponse>(urlPagination) {
                 headers {
@@ -74,7 +64,6 @@ class TwitchApiService(private val httpClient: HttpClient) {
                     append("Client-Id", OAuthConstants.clientID)
                 }
             }
-            Log.d(TAG, "************* FIN CURSOR NO NULO*************** ")
             return response
         }
 
@@ -97,8 +86,6 @@ class TwitchApiService(private val httpClient: HttpClient) {
     @Throws(UnauthorizedException::class)
     suspend fun updateUserDescription(description: String): UserResponse? {
         // TODO("Update User Description on Twitch")
-        //var url = Endpoints.userTwitch
-
         var url = Uri.parse(Endpoints.userTwitch)
             .buildUpon()
             .appendQueryParameter("description", description)
@@ -109,14 +96,6 @@ class TwitchApiService(private val httpClient: HttpClient) {
                 append("Client-Id", OAuthConstants.clientID)
             }
         }
-
-//        val response = httpClient.request<UserResponse>(url.toString()) {
-//            method = HttpMethod.Put
-//            headers {
-//                append("Client-Id", OAuthConstants.clientID)
-//            }
-//        }
-
         return response
     }
 
