@@ -2,10 +2,12 @@ package edu.uoc.pac3.twitch.profile
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
@@ -16,6 +18,7 @@ import edu.uoc.pac3.R
 import edu.uoc.pac3.data.SessionManager
 import edu.uoc.pac3.data.TwitchApiService
 import edu.uoc.pac3.data.network.Network
+import edu.uoc.pac3.data.user.User
 import kotlinx.coroutines.launch
 
 class ProfileActivity : AppCompatActivity() {
@@ -27,8 +30,38 @@ class ProfileActivity : AppCompatActivity() {
         setContentView(R.layout.activity_profile)
 
         getUserInfo()
-
     }
+
+//    private fun getUserInfo() {
+//        val service = TwitchApiService(Network.createHttpClient(this))
+//        lifecycleScope.launch {
+//            service.getUser()?.let { user->
+//                user?.let{
+//                    //updateView(it)
+//                   Log.i(TAG, user.toString())
+//                }
+//            }
+//        }
+//    }
+
+//    fun updateView(user: User) {
+//            val userName: TextView = findViewById(R.id.userNameTextView)
+//            val userViewCount: TextView = findViewById(R.id.viewsText)
+//            val userDescription: TextInputEditText = findViewById(R.id.userDescriptionEditText)
+//            val imageThumbnail: ImageView = findViewById(R.id.userImageView)
+//            userName.text = user.data?.get(0).displayName
+//            userViewCount.text = user.data?.get(0).viewCount.toString()
+//            userDescription.setText(user.data?.get(0).description)
+//
+//            val profileImg = user.data?.get(0).profileImageUrl
+//            if (profileImg !== null) {
+//                Glide.with(this@ProfileActivity)
+//                    .load(profileImg)
+//                    .into(imageThumbnail)
+//            }else{
+//                Toast.makeText( applicationContext, getString(R.string.image_error_load), Toast.LENGTH_SHORT).show()
+//            }
+//    }
 
     private fun getUserInfo() {
         val service = TwitchApiService(Network.createHttpClient(this))
@@ -42,15 +75,17 @@ class ProfileActivity : AppCompatActivity() {
                     val userDescription: TextInputEditText = findViewById(R.id.userDescriptionEditText)
                     val imageThumbnail: ImageView = findViewById(R.id.userImageView)
 
-                    userName.text = userInfo[0].display_name
-                    userViewCount.text = userInfo[0].view_count.toString()
+                    userName.text = userInfo[0].displayName
+                    userViewCount.text = userInfo[0].viewCount.toString()
                     userDescription.setText(userInfo[0].description)
 
-                    val profileImg = userInfo[0].profile_image_url
+                    val profileImg = userInfo[0].profileImageUrl
                     if (profileImg !== null) {
                         Glide.with(this@ProfileActivity)
                             .load(profileImg)
                             .into(imageThumbnail)
+                    }else{
+                        Toast.makeText( applicationContext, getString(R.string.image_error_load), Toast.LENGTH_SHORT).show()
                     }
                 }
 
@@ -77,7 +112,7 @@ class ProfileActivity : AppCompatActivity() {
                     serviceUpdate.updateUserDescription(userDescription)?.let { userResponse->
 
                         userResponse?.let { userInfo->
-                            Snackbar.make(view, "Descripcion actualizada correctamente",
+                            Snackbar.make(view, getString(R.string.description_success),
                                 Snackbar.LENGTH_LONG)
                                 .setAction("Action", null).show()
                         }
@@ -85,7 +120,7 @@ class ProfileActivity : AppCompatActivity() {
                 }
 
             }else{
-                Snackbar.make(view, "No ha ingresado descripcion",
+                Snackbar.make(view, getString(R.string.no_description),
                     Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
             }

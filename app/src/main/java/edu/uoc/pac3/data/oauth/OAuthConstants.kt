@@ -15,9 +15,9 @@ object OAuthConstants {
     val  scopes: List<String> = listOf("user:read:email", "user:edit")
     val  uniqueState = UUID.randomUUID().toString()
 
-    const val SCOPE = "scope"
-    const val STATE = "state"
-    const val CODE = "code"
-    const val FIRST = 100.toString()
+    const val SCOPE_KEY = "scope"
+    const val STATE_KEY = "state"
+    const val CODE_KEY = "code"
+    const val FIRST = 10.toString()
 
 }

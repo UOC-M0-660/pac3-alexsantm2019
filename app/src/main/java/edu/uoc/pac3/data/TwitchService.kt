@@ -1,15 +1,19 @@
 package edu.uoc.pac3.data
 
 import android.net.Uri
+import android.util.Log
+import android.widget.Toast
 import edu.uoc.pac3.data.network.Endpoints
 import edu.uoc.pac3.data.oauth.OAuthConstants
 import edu.uoc.pac3.data.oauth.OAuthTokensResponse
 import edu.uoc.pac3.data.oauth.UnauthorizedException
 import edu.uoc.pac3.data.streams.StreamsResponse
+import edu.uoc.pac3.data.user.User
 import edu.uoc.pac3.data.user.UserResponse
 import io.ktor.client.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
+import kotlinx.coroutines.Dispatchers
 
 /**
  * Created by alex on 24/10/2020.
@@ -23,20 +27,12 @@ class TwitchApiService(private val httpClient: HttpClient) {
         suspend fun getTokens(authorizationCode: String): OAuthTokensResponse? {
         // TODO("Get Tokens from Twitch")
 
-        var url = Uri.parse(Endpoints.tokensTwitch)
-            .buildUpon()
-            .appendQueryParameter("client_id", OAuthConstants.clientID)
-            .appendQueryParameter("client_secret", OAuthConstants.secretClientID)
-            .appendQueryParameter("code", authorizationCode)
-            .appendQueryParameter("grant_type", "authorization_code")
-            .appendQueryParameter("redirect_uri", OAuthConstants.redirectUri)
-            .build()
-
-        val response = httpClient.post<OAuthTokensResponse>(url.toString()) {
-            headers {
-                append("Authorization", "token")
-            }
-            body = "Command"
+        val response = httpClient.post<OAuthTokensResponse>(Endpoints.liveStreamsTwitch) {
+            parameter("client_id", OAuthConstants.clientID)
+            parameter("client_secret", OAuthConstants.secretClientID)
+            parameter("code", authorizationCode)
+            parameter("grant_type", "authorization_code")
+            parameter("redirect_uri", OAuthConstants.redirectUri)
         }
         return response
     }
@@ -60,18 +56,17 @@ class TwitchApiService(private val httpClient: HttpClient) {
             val response = httpClient.get<StreamsResponse>(urlPagination) {
                 headers {
                     append("first", OAuthConstants.FIRST)
-                    append("after", "Bearer $cursor")
+                    append("after", "$cursor")
                     append("Client-Id", OAuthConstants.clientID)
                 }
             }
             return response
         }
-
     }
 
-    /// Gets Current Authorized User on Twitch
+    // Gets Current Authorized User on Twitch
     @Throws(UnauthorizedException::class)
-    suspend fun getUser(): UserResponse? {
+    suspend fun getUser(): UserResponse?  = with (Dispatchers.IO){
         // TODO("Get User from Twitch")
         var url = Endpoints.userTwitch
         val response = httpClient.get<UserResponse>(url) {
@@ -82,16 +77,33 @@ class TwitchApiService(private val httpClient: HttpClient) {
         return response
     }
 
+
+
+//    @Throws(UnauthorizedException::class)
+//    suspend fun getUser(): User?  = with (Dispatchers.IO){
+//        // TODO("Get User from Twitch")
+//        var url = Endpoints.userTwitch
+//        var response: User? = null
+//        try {
+//            response = httpClient.get<User>(url) {
+//                headers {
+//                    append("Client-Id", OAuthConstants.clientID)
+//                }
+//            }
+//            return response
+//        } catch (e: Exception) {
+//            e.printStackTrace()
+//            return null
+//        }
+//    }
+
+
     /// Gets Current Authorized User on Twitch
     @Throws(UnauthorizedException::class)
     suspend fun updateUserDescription(description: String): UserResponse? {
         // TODO("Update User Description on Twitch")
-        var url = Uri.parse(Endpoints.userTwitch)
-            .buildUpon()
-            .appendQueryParameter("description", description)
-            .build()
-
-        val response = httpClient.put<UserResponse>(url.toString()) {
+        val response = httpClient.put<UserResponse>(Endpoints.userTwitch) {
+            parameter("description", description)
             headers {
                 append("Client-Id", OAuthConstants.clientID)
             }
@@ -103,26 +115,20 @@ class TwitchApiService(private val httpClient: HttpClient) {
     @Throws(UnauthorizedException::class)
     suspend fun revoke(accessToken: String){
         // TODO("Update User Description on Twitch")
-        var url = Uri.parse(Endpoints.revokeTokensTwitch)
-            .buildUpon()
-            .appendQueryParameter("client_id", OAuthConstants.clientID)
-            .appendQueryParameter("token", accessToken)
-            .build()
-
-        httpClient.post<UserResponse>(url.toString())
+        httpClient.post<UserResponse>(Endpoints.revokeTokensTwitch) {
+            header("client_id", OAuthConstants.clientID)
+            parameter("token", accessToken)
+        }
     }
 
     @Throws(ClientRequestException::class)
     suspend fun getRefreshToken(refreshToken: String): OAuthTokensResponse? {
-        var url = Uri.parse(Endpoints.tokensTwitch)
-            .buildUpon()
-            .appendQueryParameter("client_id", OAuthConstants.clientID)
-            .appendQueryParameter("client_secret", OAuthConstants.secretClientID)
-            .appendQueryParameter("refresh_token", refreshToken)
-            .appendQueryParameter("grant_type", "refresh_token")
-            .build()
-
-        val response = httpClient.post<OAuthTokensResponse>(url.toString())
+        val response = httpClient.post<OAuthTokensResponse>(Endpoints.tokensTwitch) {
+            parameter("client_id", OAuthConstants.clientID)
+            parameter("client_secret", OAuthConstants.secretClientID)
+            parameter("refresh_token", refreshToken)
+            parameter("grant_type", "refresh_token")
+        }
         return response
     }
 

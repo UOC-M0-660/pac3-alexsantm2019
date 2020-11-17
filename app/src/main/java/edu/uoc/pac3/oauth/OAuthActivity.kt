@@ -33,13 +33,13 @@ class OAuthActivity : AppCompatActivity() {
         launchOAuthAuthorization()
     }
 
-    fun buildOAuthUri(): Uri? {
+    fun buildOAuthUri(): Uri {
         // TODO: Create URI
-        var url = Uri.parse(OAuthConstants.authorizationUrl)
+        val url = Uri.parse(OAuthConstants.authorizationUrl)
                 .buildUpon()
                 .appendQueryParameter("client_id", OAuthConstants.clientID)
                 .appendQueryParameter("redirect_uri", OAuthConstants.redirectUri)
-                .appendQueryParameter("response_type", OAuthConstants.CODE)
+                .appendQueryParameter("response_type", OAuthConstants.CODE_KEY)
                 .appendQueryParameter("scope", OAuthConstants.scopes.joinToString(separator = " "))
                 .appendQueryParameter("state", OAuthConstants.uniqueState)
                 .build()
@@ -48,7 +48,7 @@ class OAuthActivity : AppCompatActivity() {
 
     private fun launchOAuthAuthorization() {
         //  Create URI
-        var uri = buildOAuthUri()
+        val uri = buildOAuthUri()
 
         // TODO: Set webView Redirect Listener
         webView.webViewClient = object : WebViewClient() {
@@ -104,16 +104,13 @@ class OAuthActivity : AppCompatActivity() {
         val twitchService = TwitchApiService(Network.createHttpClient(this))
 
         // TODO: Get Tokens from Twitch
-        lifecycleScope.launch {
-            var valuesTokens = twitchService.getTokens(authorizationCode)
-
+            val valuesTokens = twitchService.getTokens(authorizationCode)
             // TODO: Save access token and refresh token using the SessionManager class
-            var accessToken = valuesTokens?.accessToken
-            var refreshToken = valuesTokens?.refreshToken
+            val accessToken = valuesTokens?.accessToken
+            val refreshToken = valuesTokens?.refreshToken
 
             val sharedPreference = SessionManager(this@OAuthActivity)
             if (accessToken != null) {
-                //Toast.makeText( applicationContext, "accessToken $accessToken", Toast.LENGTH_SHORT).show()
                 sharedPreference.saveAccessToken(accessToken)
             }
             if (refreshToken != null) {
@@ -121,16 +118,14 @@ class OAuthActivity : AppCompatActivity() {
             }
             webView.visibility = View.VISIBLE
             progressBar.visibility = View.GONE
-        }
 
         goToStreamActivity()
     }
 
     private fun goToStreamActivity() {
         // Ir a StreamsActivity
-
         val intent = Intent(this, StreamsActivity::class.java)
-        //intent.putExtra("accessToken",accessToken)
         startActivity(intent)
+        finish()
     }
 }

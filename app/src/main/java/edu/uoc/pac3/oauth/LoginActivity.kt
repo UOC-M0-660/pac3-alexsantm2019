@@ -13,6 +13,7 @@ class LoginActivity : AppCompatActivity() {
         // Login with Twitch
         twitchLoginButton.setOnClickListener {
             startActivity(Intent(this, OAuthActivity::class.java))
+            finish()
         }
     }
 }

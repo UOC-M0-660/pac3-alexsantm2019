@@ -36,11 +36,11 @@ class StreamAdapter(private var streams: MutableList<Stream>?) : RecyclerView.Ad
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val stream = streams?.get(position)
         if (stream != null) {
-            holder.userName.text = stream.user_name
+            holder.userName.text = stream.userName
             holder.title.text = stream.title
 
-            if (!stream.thumbnail_url.isNullOrBlank()){
-                val imageThumbnail: String = stream.thumbnail_url.replace("{width}", "100").replace("{height}", "100")
+            if (!stream.thumbnailUrl.isNullOrBlank()){
+                val imageThumbnail: String = stream.thumbnailUrl.replace("{width}", "100").replace("{height}", "100")
 
                 Glide.with(holder.thumbnailUrl.getContext())
                     .load(imageThumbnail)

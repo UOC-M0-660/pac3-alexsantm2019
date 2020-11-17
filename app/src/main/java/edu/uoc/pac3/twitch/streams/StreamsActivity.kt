@@ -82,6 +82,10 @@ class StreamsActivity : AppCompatActivity() {
         isLoading = false
     }
 
+    /*
+    * Debes asegurárte que es un 401.
+        ClientRequestException puede ser cualquier 4xx
+    * */
     private suspend fun loadStreams(cursor: String? = null): StreamsResponse?{
         val instanceClient = Network.createHttpClient(this)
         val service = TwitchApiService(instanceClient)
@@ -95,7 +99,7 @@ class StreamsActivity : AppCompatActivity() {
             try {
                  streamsResponse = newService.getStreams(cursor)
             } catch (e: ClientRequestException) {
-                Toast.makeText( applicationContext, "Es necesario hacer logout", Toast.LENGTH_SHORT).show()
+                Toast.makeText( applicationContext, getString(R.string.login_again), Toast.LENGTH_SHORT).show()
             } finally {
                 newInstanceClient.close()
             }
@@ -163,7 +167,6 @@ class StreamsActivity : AppCompatActivity() {
         try {
             sessionManager.getRefreshToken()?.let {
                 service.getRefreshToken(it)?.let { tokensResponse ->
-                    Log.i(TAG, "refreshToken: nuevo access token ${tokensResponse.accessToken}")
                     sessionManager.saveAccessToken(tokensResponse.accessToken)
                     tokensResponse.refreshToken?.let {
                         sessionManager.saveRefreshToken(it)
@@ -171,7 +174,7 @@ class StreamsActivity : AppCompatActivity() {
                 }
             }
         }catch (e: ClientRequestException){
-            Toast.makeText( applicationContext, "Ocurrio un error al momento de refrescar Token", Toast.LENGTH_SHORT).show()
+            Toast.makeText( applicationContext, getString(R.string.error_refresh_token), Toast.LENGTH_SHORT).show()
             logout()
         }
 
