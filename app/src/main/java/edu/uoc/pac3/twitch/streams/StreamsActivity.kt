@@ -82,10 +82,6 @@ class StreamsActivity : AppCompatActivity() {
         isLoading = false
     }
 
-    /*
-    * Debes asegurárte que es un 401.
-        ClientRequestException puede ser cualquier 4xx
-    * */
     private suspend fun loadStreams(cursor: String? = null): StreamsResponse?{
         val instanceClient = Network.createHttpClient(this)
         val service = TwitchApiService(instanceClient)
@@ -93,16 +89,20 @@ class StreamsActivity : AppCompatActivity() {
         try {
             streamsResponse = service.getStreams(cursor)
         } catch (e: ClientRequestException) {
-            refreshToken(service)
-            val newInstanceClient = Network.createHttpClient(this)
-            val newService = TwitchApiService(newInstanceClient)
-            try {
-                 streamsResponse = newService.getStreams(cursor)
-            } catch (e: ClientRequestException) {
-                Toast.makeText( applicationContext, getString(R.string.login_again), Toast.LENGTH_SHORT).show()
-            } finally {
-                newInstanceClient.close()
+
+            if (e is ClientRequestException && e.response?.status?.value == 401) {
+                renewToken(service)
+                val newInstanceClient = Network.createHttpClient(this)
+                val newService = TwitchApiService(newInstanceClient)
+                try {
+                    streamsResponse = newService.getStreams(cursor)
+                } catch (e: ClientRequestException) {
+                    Toast.makeText( applicationContext, getString(R.string.login_again), Toast.LENGTH_SHORT).show()
+                } finally {
+                    newInstanceClient.close()
+                }
             }
+
         } finally {
             instanceClient.close()
         }
@@ -153,15 +153,9 @@ class StreamsActivity : AppCompatActivity() {
         }
     }
 
-    private fun logout(){
-        val sessionManager = SessionManager(this)
-        sessionManager.clearAccessToken()
-        sessionManager.clearRefreshToken()
-        val intent = Intent(this, LoginActivity::class.java)
-        startActivity(intent)
-    }
 
-    private suspend fun refreshToken(service: TwitchApiService){
+
+    private suspend fun renewToken(service: TwitchApiService){
         val sessionManager = SessionManager(this)
         sessionManager.clearAccessToken()
         try {
@@ -174,10 +168,18 @@ class StreamsActivity : AppCompatActivity() {
                 }
             }
         }catch (e: ClientRequestException){
+            // En caso de no poder obtener accessToken hago LogOut para que el usuario haga Login de nuevo
             Toast.makeText( applicationContext, getString(R.string.error_refresh_token), Toast.LENGTH_SHORT).show()
             logout()
         }
+    }
 
+    private fun logout(){
+        val sessionManager = SessionManager(this)
+        sessionManager.clearAccessToken()
+        sessionManager.clearRefreshToken()
+        val intent = Intent(this, LoginActivity::class.java)
+        startActivity(intent)
     }
 
 }

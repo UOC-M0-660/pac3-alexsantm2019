@@ -14,6 +14,7 @@ import io.ktor.client.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
  * Created by alex on 24/10/2020.
@@ -77,38 +78,28 @@ class TwitchApiService(private val httpClient: HttpClient) {
         return response
     }
 
-
-
-//    @Throws(UnauthorizedException::class)
-//    suspend fun getUser(): User?  = with (Dispatchers.IO){
-//        // TODO("Get User from Twitch")
-//        var url = Endpoints.userTwitch
-//        var response: User? = null
-//        try {
-//            response = httpClient.get<User>(url) {
-//                headers {
-//                    append("Client-Id", OAuthConstants.clientID)
-//                }
-//            }
-//            return response
-//        } catch (e: Exception) {
-//            e.printStackTrace()
-//            return null
-//        }
-//    }
-
-
-    /// Gets Current Authorized User on Twitch
     @Throws(UnauthorizedException::class)
-    suspend fun updateUserDescription(description: String): UserResponse? {
-        // TODO("Update User Description on Twitch")
-        val response = httpClient.put<UserResponse>(Endpoints.userTwitch) {
-            parameter("description", description)
-            headers {
-                append("Client-Id", OAuthConstants.clientID)
+    suspend fun updateUserDescription(description: String): User? {
+        val users = withContext(Dispatchers.IO){
+            return@withContext try {
+                httpClient.put<UserResponse>(Endpoints.userTwitch) {
+                    parameter("description", description)
+                    headers {
+                        append("Client-Id", OAuthConstants.clientID)
+                    }
+                }
+            }catch (e: Exception){
+                e.printStackTrace()
+                if (e is ClientRequestException && e.response?.status?.value == 401){
+                    throw UnauthorizedException
+                }
+                null
             }
         }
-        return response
+        users?.data?.let {
+            return it[0]
+        }
+        return null
     }
 
     /// Gets Current Authorized User on Twitch

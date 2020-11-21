@@ -2,7 +2,6 @@ package edu.uoc.pac3.twitch.profile
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
@@ -19,6 +18,7 @@ import edu.uoc.pac3.data.SessionManager
 import edu.uoc.pac3.data.TwitchApiService
 import edu.uoc.pac3.data.network.Network
 import edu.uoc.pac3.data.user.User
+import io.ktor.client.features.*
 import kotlinx.coroutines.launch
 
 class ProfileActivity : AppCompatActivity() {
@@ -32,64 +32,34 @@ class ProfileActivity : AppCompatActivity() {
         getUserInfo()
     }
 
-//    private fun getUserInfo() {
-//        val service = TwitchApiService(Network.createHttpClient(this))
-//        lifecycleScope.launch {
-//            service.getUser()?.let { user->
-//                user?.let{
-//                    //updateView(it)
-//                   Log.i(TAG, user.toString())
-//                }
-//            }
-//        }
-//    }
-
-//    fun updateView(user: User) {
-//            val userName: TextView = findViewById(R.id.userNameTextView)
-//            val userViewCount: TextView = findViewById(R.id.viewsText)
-//            val userDescription: TextInputEditText = findViewById(R.id.userDescriptionEditText)
-//            val imageThumbnail: ImageView = findViewById(R.id.userImageView)
-//            userName.text = user.data?.get(0).displayName
-//            userViewCount.text = user.data?.get(0).viewCount.toString()
-//            userDescription.setText(user.data?.get(0).description)
-//
-//            val profileImg = user.data?.get(0).profileImageUrl
-//            if (profileImg !== null) {
-//                Glide.with(this@ProfileActivity)
-//                    .load(profileImg)
-//                    .into(imageThumbnail)
-//            }else{
-//                Toast.makeText( applicationContext, getString(R.string.image_error_load), Toast.LENGTH_SHORT).show()
-//            }
-//    }
-
     private fun getUserInfo() {
         val service = TwitchApiService(Network.createHttpClient(this))
         lifecycleScope.launch {
             service.getUser()?.let { userResponse->
-
                 userResponse.data?.let { userInfo->
-
-                    val userName: TextView = findViewById(R.id.userNameTextView)
-                    val userViewCount: TextView = findViewById(R.id.viewsText)
-                    val userDescription: TextInputEditText = findViewById(R.id.userDescriptionEditText)
-                    val imageThumbnail: ImageView = findViewById(R.id.userImageView)
-
-                    userName.text = userInfo[0].displayName
-                    userViewCount.text = userInfo[0].viewCount.toString()
-                    userDescription.setText(userInfo[0].description)
-
-                    val profileImg = userInfo[0].profileImageUrl
-                    if (profileImg !== null) {
-                        Glide.with(this@ProfileActivity)
-                            .load(profileImg)
-                            .into(imageThumbnail)
-                    }else{
-                        Toast.makeText( applicationContext, getString(R.string.image_error_load), Toast.LENGTH_SHORT).show()
-                    }
+                    updateInterfaz(userInfo)       // Actualizo interfaz
                 }
-
             }
+        }
+    }
+
+    private fun updateInterfaz(userInfo: List<User>){
+        val userName: TextView = findViewById(R.id.userNameTextView)
+        val userViewCount: TextView = findViewById(R.id.viewsText)
+        val userDescription: TextInputEditText = findViewById(R.id.userDescriptionEditText)
+        val imageThumbnail: ImageView = findViewById(R.id.userImageView)
+
+        userName.text = userInfo[0].displayName
+        userViewCount.text = userInfo[0].viewCount.toString()
+        userDescription.setText(userInfo[0].description)
+
+        val profileImg = userInfo[0].profileImageUrl
+        if (profileImg !== null) {
+            Glide.with(this@ProfileActivity)
+                .load(profileImg)
+                .into(imageThumbnail)
+        }else{
+            Toast.makeText( applicationContext, getString(R.string.image_error_load), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -107,25 +77,50 @@ class ProfileActivity : AppCompatActivity() {
         updateDescriptionButton.setOnClickListener {
 
             if (!userDescription.isNullOrBlank()){
+                try {
+                    lifecycleScope.launch {
+                        serviceUpdate.updateUserDescription(userDescription)?.let { userResponse->
+                            userResponse?.let { userInfo->
 
-                lifecycleScope.launch {
-                    serviceUpdate.updateUserDescription(userDescription)?.let { userResponse->
-
-                        userResponse?.let { userInfo->
-                            Snackbar.make(view, getString(R.string.description_success),
-                                Snackbar.LENGTH_LONG)
-                                .setAction("Action", null).show()
+                                // OK Descripcion actualizada correctamente
+                                Snackbar.make(view, getString(R.string.description_success),
+                                    Snackbar.LENGTH_LONG)
+                                    .setAction("Action", null).show()
+                            }
+                        }
+                    }
+                }catch (e: ClientRequestException){
+                    if (e is ClientRequestException && e.response?.status?.value == 401) {
+                        lifecycleScope.launch {
+                            refreshToken(serviceUpdate)
+                            logOut(view)
                         }
                     }
                 }
-
             }else{
                 Snackbar.make(view, getString(R.string.no_description),
                     Snackbar.LENGTH_LONG)
                     .setAction("Action", null).show()
             }
         }
+    }
 
+    suspend fun refreshToken(service: TwitchApiService){
+        val sessionManager = SessionManager(this)
+        sessionManager.clearAccessToken()
+        try {
+            sessionManager.getRefreshToken()?.let {
+                service.getRefreshToken(it)?.let { tokensResponse ->
+                    sessionManager.saveAccessToken(tokensResponse.accessToken)
+                    tokensResponse.refreshToken?.let {
+                        sessionManager.saveRefreshToken(it)
+                    }
+                }
+            }
+        }catch (e: ClientRequestException){
+            // En caso de no poder obtener accessToken hago LogOut para que el usuario haga Login de nuevo
+            Toast.makeText( applicationContext, getString(R.string.error_refresh_token), Toast.LENGTH_SHORT).show()
+        }
     }
 
     fun logOut(view:View) {
@@ -137,18 +132,9 @@ class ProfileActivity : AppCompatActivity() {
         lifecycleScope.launch {
             val accessToken = SessionManager(this@ProfileActivity).getAccessToken()
             if (accessToken != null) {
-
                 twitchService.revoke(accessToken)
-//                twitchService.revoke(accessToken)?.let { userResponse->
-//                    userResponse?.let { userInfo->
-//                        Snackbar.make(view, "Revokado",
-//                            Snackbar.LENGTH_LONG)
-//                            .setAction("Action", null).show()
-//                    }
-//                }
             }
         }
-
         val intent = Intent(this, LaunchActivity::class.java)
         startActivity(intent)
     }
