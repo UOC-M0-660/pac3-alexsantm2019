@@ -5,10 +5,11 @@
 #### Explica el ciclo de vida de una Activity.
 
 ##### ¿Por qué vinculamos las tareas de red a los componentes UI de la aplicación?
-Escribe tu respuesta aquí
+Simplemente porque no es posible mostrar la información en caso de que los componentes UI no existan. En este caso es necesario que se asegure de que los 
+componentes UI sean creados antes para evitar problemas, o en su defecto, cancelar manualmente el proceso para evitar crash en la aplicación.
 
 ##### ¿Qué pasaría si intentamos actualizar la recyclerview con nuevos streams después de que el usuario haya cerrado la aplicación?
-Escribe tu respuesta aquí
+La tarea se cancela automáticamente ya que la recyclerview ya no existe. Por ejemplo, en el caso de rotación de la pantalla, si se rota antes de terminar la operación de red, al intentar hacer webView.visibility = View.GONE por ejemplo, se estaría actualizando una vista que ya no existe.
 
 ##### Describe brevemente los principales estados del ciclo de vida de una Activity.
 
@@ -33,10 +34,17 @@ onDestroy(): Se llama antes de que la actividad sea totalmente destruida. Por ej
 #### Explica el uso de paginación en la API de Twitch.
 
 ##### ¿Qué ventajas ofrece la paginación a la aplicación?
-Escribe aquí tu respuesta
+Entre las principales ventajas que se tiene con la paginación están: 
+- Reducción de recursos de la aplicación. Al aplicación toma menos tiempo en usar recursos para mostrar datos
+- Aumento de velocidad de carga y repuesta. Mejora la experiencia de usuario al mostrar datos de forma rápida, y no quedarse bloqueado trayendo toda la información
 
 ##### ¿Qué problemas puede tener la aplicación si no se utiliza paginación?
-Escribe aquí tu respuesta
+En cuanto a experiencia de usuario, éste al ver que la aplicación tarda bastante en mostrar la información, simplemente la dejará de usar. El otro problema es la lentitud con la que el aplicativo mostraría la información, consumiendo recursos, y decepcionando al usuario.
 
 ##### Lista algunos ejemplos de aplicaciones que usan paginación.
-Escribe aquí tu respuesta
+Entre las más comunes y debido al nivel de datos a mostrar tenemos:
+- Facebook
+- Whatsapp
+- Twitter
+- Instagram
+- 
