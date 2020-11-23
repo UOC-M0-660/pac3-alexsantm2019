@@ -47,4 +47,3 @@ Entre las más comunes y debido al nivel de datos a mostrar tenemos:
 - Whatsapp
 - Twitter
 - Instagram
-- 
