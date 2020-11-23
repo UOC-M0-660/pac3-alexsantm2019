@@ -65,7 +65,7 @@ class OAuthActivity : AppCompatActivity() {
                             request.url.getQueryParameter("code")?.let { code ->
                                 // Got it!
 
-                                GlobalScope.launch(Dispatchers.Main) {
+                                lifecycleScope.launch(Dispatchers.Main) {
                                     onAuthorizationCodeRetrieved(code)
 
                                     webView.visibility = View.GONE
