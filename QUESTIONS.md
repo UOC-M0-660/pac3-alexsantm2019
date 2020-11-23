@@ -9,7 +9,7 @@ Simplemente porque no es posible mostrar la información en caso de que los comp
 componentes UI sean creados antes para evitar problemas, o en su defecto, cancelar manualmente el proceso para evitar crash en la aplicación.
 
 ##### ¿Qué pasaría si intentamos actualizar la recyclerview con nuevos streams después de que el usuario haya cerrado la aplicación?
-La tarea se cancela automáticamente ya que la recyclerview ya no existe. Por ejemplo, en el caso de rotación de la pantalla, si se rota antes de terminar la operación de red, al intentar hacer webView.visibility = View.GONE por ejemplo, se estaría actualizando una vista que ya no existe.
+La tarea se cancela automáticamente ya que la recyclerview ya no existe. Por eso es importante usar lifecycle.Scope en vez de globalScope para asegurarnos que al morir la aplicación, la corutina también muere.Otro ejemplo es , en el caso de rotación de la pantalla, si se rota antes de terminar la operación de red, al intentar hacer webView.visibility = View.GONE por ejemplo, se estaría actualizando una vista que ya no existe.
 
 ##### Describe brevemente los principales estados del ciclo de vida de una Activity.
 
