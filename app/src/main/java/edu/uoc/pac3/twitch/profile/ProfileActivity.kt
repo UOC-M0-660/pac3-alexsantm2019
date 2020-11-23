@@ -49,7 +49,7 @@ class ProfileActivity : AppCompatActivity() {
         val userDescription: TextInputEditText = findViewById(R.id.userDescriptionEditText)
         val imageThumbnail: ImageView = findViewById(R.id.userImageView)
 
-        userName.text = userInfo[0].userName
+        userName.text = userInfo[0].displayName
         userViewCount.text = userInfo[0].viewCount.toString()
         userDescription.setText(userInfo[0].description)
 

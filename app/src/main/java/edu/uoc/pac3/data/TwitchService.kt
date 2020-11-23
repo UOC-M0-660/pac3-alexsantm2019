@@ -43,39 +43,57 @@ class TwitchApiService(private val httpClient: HttpClient) {
      suspend fun getStreams(cursor: String? = null): StreamsResponse? {
 
         // TODO("Get Streams from Twitch")
-        if(cursor == null){
-            var url = Endpoints.liveStreamsTwitch
-            val response = httpClient.get<StreamsResponse>(url) {
-                headers {
-                    append("Client-Id", OAuthConstants.clientID)
+
+        return try {
+            if(cursor == null){
+                var url = Endpoints.liveStreamsTwitch
+                val response = httpClient.get<StreamsResponse>(url) {
+                    headers {
+                        append("Client-Id", OAuthConstants.clientID)
+                    }
                 }
-            }
-            return response
-        }else{
-            // TODO("Support Pagination")
-            var urlPagination = Endpoints.liveStreamsTwitch
-            val response = httpClient.get<StreamsResponse>(urlPagination) {
-                headers {
-                    append("first", OAuthConstants.FIRST)
-                    append("after", "$cursor")
-                    append("Client-Id", OAuthConstants.clientID)
+                return response
+            }else{
+                // TODO("Support Pagination")
+                var urlPagination = Endpoints.liveStreamsTwitch
+                val response = httpClient.get<StreamsResponse>(urlPagination) {
+                    headers {
+                        append("first", OAuthConstants.FIRST)
+                        append("after", "$cursor")
+                        append("Client-Id", OAuthConstants.clientID)
+                    }
                 }
+                return response
             }
-            return response
+        }catch (e: Exception){
+            e.printStackTrace()
+            if (e is ClientRequestException && e.response?.status?.value == 401){
+                throw UnauthorizedException
+            }
+            null
         }
     }
+
 
     // Gets Current Authorized User on Twitch
     @Throws(UnauthorizedException::class)
     suspend fun getUser(): UserResponse?  = with (Dispatchers.IO){
         // TODO("Get User from Twitch")
         var url = Endpoints.userTwitch
-        val response = httpClient.get<UserResponse>(url) {
-            headers {
-                append("Client-Id", OAuthConstants.clientID)
+        return try {
+            val response = httpClient.get<UserResponse>(url) {
+                headers {
+                    append("Client-Id", OAuthConstants.clientID)
+                }
             }
+            return response
+        }catch (e: Exception){
+            e.printStackTrace()
+            if (e is ClientRequestException && e.response?.status?.value == 401){
+                throw UnauthorizedException
+            }
+            null
         }
-        return response
     }
 
     @Throws(UnauthorizedException::class)
