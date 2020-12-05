@@ -11,15 +11,16 @@ class SessionManager(context: Context) {
 
     val context: Context = context
 
-    private var ACCESS_TOKEN =  "accessToken"
-    private var REFRESH_TOKEN =  "refreshToken"
-    private var TOKEN =  "token"
-    private val sharedPreferences: SharedPreferences = context.getSharedPreferences(TOKEN, Context.MODE_PRIVATE)
+    private var ACCESS_TOKEN = "accessToken"
+    private var REFRESH_TOKEN = "refreshToken"
+    private var TOKEN = "token"
+    private val sharedPreferences: SharedPreferences =
+        context.getSharedPreferences(TOKEN, Context.MODE_PRIVATE)
 
     fun isUserAvailable(): Boolean {
         // TODO: Implement
-        //return false
-        return (getAccessToken()?.isNotEmpty() ?: false) && (getRefreshToken()?.isNotEmpty() ?: false)
+        return (getAccessToken()?.isNotEmpty() ?: false) && (getRefreshToken()?.isNotEmpty()
+            ?: false)
     }
 
     fun getAccessToken(): String? {
@@ -49,7 +50,7 @@ class SessionManager(context: Context) {
     }
 
     fun clearRefreshToken() {
-       // TODO("Clear Refresh Token")
+        // TODO("Clear Refresh Token")
         context.getSharedPreferences(REFRESH_TOKEN, 0).edit().clear().apply()
     }
 

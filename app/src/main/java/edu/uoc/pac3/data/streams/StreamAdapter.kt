@@ -10,7 +10,8 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import edu.uoc.pac3.R
 
-class StreamAdapter(private var streams: MutableList<Stream>?) : RecyclerView.Adapter<StreamAdapter.ViewHolder>() {
+class StreamAdapter(private var streams: MutableList<Stream>?) :
+    RecyclerView.Adapter<StreamAdapter.ViewHolder>() {
 
     fun setStreams(streams: MutableList<Stream>) {
         this.streams = streams
@@ -18,7 +19,7 @@ class StreamAdapter(private var streams: MutableList<Stream>?) : RecyclerView.Ad
         notifyDataSetChanged()
     }
 
-    fun addStreams(streams: List<Stream>){
+    fun addStreams(streams: List<Stream>) {
         val previousSize = this.streams?.size
         this.streams?.addAll(streams)
         if (previousSize != null) {
@@ -39,8 +40,9 @@ class StreamAdapter(private var streams: MutableList<Stream>?) : RecyclerView.Ad
             holder.userName.text = stream.userName
             holder.title.text = stream.title
 
-            if (!stream.thumbnailUrl.isNullOrBlank()){
-                val imageThumbnail: String = stream.thumbnailUrl.replace("{width}", "100").replace("{height}", "100")
+            if (!stream.thumbnailUrl.isNullOrBlank()) {
+                val imageThumbnail: String =
+                    stream.thumbnailUrl.replace("{width}", "100").replace("{height}", "100")
 
                 Glide.with(holder.thumbnailUrl.getContext())
                     .load(imageThumbnail)

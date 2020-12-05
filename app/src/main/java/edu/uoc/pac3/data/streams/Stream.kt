@@ -10,18 +10,18 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Stream(
-    @SerialName("userName")  val userName: String? = null,
+    @SerialName("userName") val userName: String? = null,
     @SerialName("title") val title: String? = null,
     @SerialName("thumbnail_url") val thumbnailUrl: String? = null,
 )
 
 @Serializable
 data class StreamsResponse(
-    @SerialName("data")  val data: List<Stream>? = null,
+    @SerialName("data") val data: List<Stream>? = null,
     @SerialName("pagination") val pagination: Pagination? = null
 )
 
 @Serializable
 data class Pagination(
-    @SerialName("cursor")  val cursor: String? = null,
+    @SerialName("cursor") val cursor: String? = null,
 )

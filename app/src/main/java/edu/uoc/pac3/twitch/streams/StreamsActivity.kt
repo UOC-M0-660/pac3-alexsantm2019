@@ -59,37 +59,40 @@ class StreamsActivity : AppCompatActivity() {
         }
     }
 
-    private fun getStreams(cursor: String? = null){
+    private fun getStreams(cursor: String? = null) {
         lifecycleScope.launch {
             // Envio cursor
             val streamsResponse: StreamsResponse?
-            if(cursor == null){                     // En caso de que cursor sea nulo
+            if (cursor == null) {                     // En caso de que cursor sea nulo
                 streamsResponse = loadStreams()
-            }else{                                  // En caso contrario, lo envio como parametro a funcion loadStreams
+            } else {                                  // En caso contrario, lo envio como parametro a funcion loadStreams
                 streamsResponse = loadStreams(cursor)
             }
             streamsResponse?.let {
-                streamsResponse.data?.let {streams->
+                streamsResponse.data?.let { streams ->
                     adapter.addStreams(streams)     // Añado mas items a los ya existentes
                 }
                 streamsResponse.pagination?.cursor?.let {
                     this@StreamsActivity.cursor = it
                 }
-            }?: run {
-                Toast.makeText(this@StreamsActivity, getString(R.string.error_streams), Toast.LENGTH_SHORT).show()
+            } ?: run {
+                Toast.makeText(
+                    this@StreamsActivity,
+                    getString(R.string.error_streams),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
         isLoading = false
     }
 
-    private suspend fun loadStreams(cursor: String? = null): StreamsResponse?{
+    private suspend fun loadStreams(cursor: String? = null): StreamsResponse? {
         val instanceClient = Network.createHttpClient(this)
         val service = TwitchApiService(instanceClient)
         var streamsResponse: StreamsResponse? = null
         try {
             streamsResponse = service.getStreams(cursor)
         } catch (e: ClientRequestException) {
-
             if (e is ClientRequestException && e.response?.status?.value == 401) {
                 renewToken(service)
                 val newInstanceClient = Network.createHttpClient(this)
@@ -97,19 +100,22 @@ class StreamsActivity : AppCompatActivity() {
                 try {
                     streamsResponse = newService.getStreams(cursor)
                 } catch (e: ClientRequestException) {
-                    Toast.makeText( applicationContext, getString(R.string.login_again), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        applicationContext,
+                        getString(R.string.login_again),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 } finally {
                     newInstanceClient.close()
                 }
             }
-
         } finally {
             instanceClient.close()
         }
         return streamsResponse
     }
 
-    private fun setupRecycler(){
+    private fun setupRecycler() {
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
@@ -127,7 +133,7 @@ class StreamsActivity : AppCompatActivity() {
         })
     }
 
-    private fun refreshStreams(){
+    private fun refreshStreams() {
         swipeRefreshLayout.setOnRefreshListener {
             getStreams()
             swipeRefreshLayout.isRefreshing = false
@@ -153,9 +159,7 @@ class StreamsActivity : AppCompatActivity() {
         }
     }
 
-
-
-    private suspend fun renewToken(service: TwitchApiService){
+    private suspend fun renewToken(service: TwitchApiService) {
         val sessionManager = SessionManager(this)
         sessionManager.clearAccessToken()
         try {
@@ -167,19 +171,24 @@ class StreamsActivity : AppCompatActivity() {
                     }
                 }
             }
-        }catch (e: ClientRequestException){
+        } catch (e: ClientRequestException) {
             // En caso de no poder obtener accessToken hago LogOut para que el usuario haga Login de nuevo
-            Toast.makeText( applicationContext, getString(R.string.error_refresh_token), Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                applicationContext,
+                getString(R.string.error_refresh_token),
+                Toast.LENGTH_SHORT
+            ).show()
             logout()
         }
     }
 
-    private fun logout(){
+    private fun logout() {
         val sessionManager = SessionManager(this)
         sessionManager.clearAccessToken()
         sessionManager.clearRefreshToken()
         val intent = Intent(this, LoginActivity::class.java)
         startActivity(intent)
+        finish()
     }
 
 }

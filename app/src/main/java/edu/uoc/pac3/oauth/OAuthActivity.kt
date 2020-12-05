@@ -36,14 +36,14 @@ class OAuthActivity : AppCompatActivity() {
     fun buildOAuthUri(): Uri {
         // TODO: Create URI
         val url = Uri.parse(OAuthConstants.authorizationUrl)
-                .buildUpon()
-                .appendQueryParameter("client_id", OAuthConstants.clientID)
-                .appendQueryParameter("redirect_uri", OAuthConstants.redirectUri)
-                .appendQueryParameter("response_type", OAuthConstants.CODE_KEY)
-                .appendQueryParameter("scope", OAuthConstants.scopes.joinToString(separator = " "))
-                .appendQueryParameter("state", OAuthConstants.uniqueState)
-                .build()
-       return url
+            .buildUpon()
+            .appendQueryParameter("client_id", OAuthConstants.clientID)
+            .appendQueryParameter("redirect_uri", OAuthConstants.redirectUri)
+            .appendQueryParameter("response_type", OAuthConstants.CODE_KEY)
+            .appendQueryParameter("scope", OAuthConstants.scopes.joinToString(separator = " "))
+            .appendQueryParameter("state", OAuthConstants.uniqueState)
+            .build()
+        return url
     }
 
     private fun launchOAuthAuthorization() {
@@ -52,35 +52,39 @@ class OAuthActivity : AppCompatActivity() {
 
         // TODO: Set webView Redirect Listener
         webView.webViewClient = object : WebViewClient() {
-                override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                    //Toast.makeText( applicationContext, "shouldOverrideUrlLoading", Toast.LENGTH_SHORT).show()
+            override fun shouldOverrideUrlLoading(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): Boolean {
                 request?.let {
                     // Check if this url is our OAuth redirect, otherwise ignore it
                     if (request.url.toString().startsWith(OAuthConstants.redirectUri)) {
                         // To prevent CSRF attacks, check that we got the same state value we sent, otherwise ignore it
                         val responseState = request.url.getQueryParameter("state")
-//                        if (responseState != null) {
-                            if (responseState == OAuthConstants.uniqueState) {
+                        if (responseState == OAuthConstants.uniqueState) {
                             // This is our request, obtain the code!
                             request.url.getQueryParameter("code")?.let { code ->
-                                // Got it!
-
                                 lifecycleScope.launch(Dispatchers.Main) {
                                     onAuthorizationCodeRetrieved(code)
-
                                     webView.visibility = View.GONE
                                     progressBar.visibility = View.VISIBLE
                                 }
-
                             } ?: run {
                                 // User cancelled the login flow
                                 // TODO: Handle error
-                                Toast.makeText( applicationContext, "No code available", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(
+                                    applicationContext,
+                                    getString(R.string.code_no_availabile),
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
                         }
-                    }else{
-                        Log.d("OAuth", "No request")
-                        Toast.makeText(applicationContext, "No hay request", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(
+                            applicationContext,
+                            getString(R.string.no_request),
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
                 return super.shouldOverrideUrlLoading(view, request)
@@ -104,20 +108,20 @@ class OAuthActivity : AppCompatActivity() {
         val twitchService = TwitchApiService(Network.createHttpClient(this))
 
         // TODO: Get Tokens from Twitch
-            val valuesTokens = twitchService.getTokens(authorizationCode)
-            // TODO: Save access token and refresh token using the SessionManager class
-            val accessToken = valuesTokens?.accessToken
-            val refreshToken = valuesTokens?.refreshToken
+        val valuesTokens = twitchService.getTokens(authorizationCode)
+        // TODO: Save access token and refresh token using the SessionManager class
+        val accessToken = valuesTokens?.accessToken
+        val refreshToken = valuesTokens?.refreshToken
 
-            val sharedPreference = SessionManager(this@OAuthActivity)
-            if (accessToken != null) {
-                sharedPreference.saveAccessToken(accessToken)
-            }
-            if (refreshToken != null) {
-                sharedPreference.saveRefreshToken(refreshToken)
-            }
-            webView.visibility = View.VISIBLE
-            progressBar.visibility = View.GONE
+        val sharedPreference = SessionManager(this@OAuthActivity)
+        if (accessToken != null) {
+            sharedPreference.saveAccessToken(accessToken)
+        }
+        if (refreshToken != null) {
+            sharedPreference.saveRefreshToken(refreshToken)
+        }
+        webView.visibility = View.VISIBLE
+        progressBar.visibility = View.GONE
 
         goToStreamActivity()
     }

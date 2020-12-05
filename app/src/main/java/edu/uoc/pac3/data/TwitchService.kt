@@ -24,8 +24,8 @@ class TwitchApiService(private val httpClient: HttpClient) {
     private val TAG = "TwitchApiService"
 
     /// Gets Access and Refresh Tokens on Twitch
-        @Throws(ClientRequestException::class)
-        suspend fun getTokens(authorizationCode: String): OAuthTokensResponse? {
+    @Throws(ClientRequestException::class)
+    suspend fun getTokens(authorizationCode: String): OAuthTokensResponse? {
         // TODO("Get Tokens from Twitch")
 
         val response = httpClient.post<OAuthTokensResponse>(Endpoints.liveStreamsTwitch) {
@@ -40,12 +40,12 @@ class TwitchApiService(private val httpClient: HttpClient) {
 
     /// Gets Streams on Twitch
     @Throws(UnauthorizedException::class)
-     suspend fun getStreams(cursor: String? = null): StreamsResponse? {
+    suspend fun getStreams(cursor: String? = null): StreamsResponse? {
 
         // TODO("Get Streams from Twitch")
 
         return try {
-            if(cursor == null){
+            if (cursor == null) {
                 var url = Endpoints.liveStreamsTwitch
                 val response = httpClient.get<StreamsResponse>(url) {
                     headers {
@@ -53,7 +53,7 @@ class TwitchApiService(private val httpClient: HttpClient) {
                     }
                 }
                 return response
-            }else{
+            } else {
                 // TODO("Support Pagination")
                 var urlPagination = Endpoints.liveStreamsTwitch
                 val response = httpClient.get<StreamsResponse>(urlPagination) {
@@ -65,9 +65,9 @@ class TwitchApiService(private val httpClient: HttpClient) {
                 }
                 return response
             }
-        }catch (e: Exception){
+        } catch (e: Exception) {
             e.printStackTrace()
-            if (e is ClientRequestException && e.response?.status?.value == 401){
+            if (e is ClientRequestException && e.response?.status?.value == 401) {
                 throw UnauthorizedException
             }
             null
@@ -77,7 +77,7 @@ class TwitchApiService(private val httpClient: HttpClient) {
 
     // Gets Current Authorized User on Twitch
     @Throws(UnauthorizedException::class)
-    suspend fun getUser(): UserResponse?  = with (Dispatchers.IO){
+    suspend fun getUser(): User? = with(Dispatchers.IO) {
         // TODO("Get User from Twitch")
         var url = Endpoints.userTwitch
         return try {
@@ -86,10 +86,11 @@ class TwitchApiService(private val httpClient: HttpClient) {
                     append("Client-Id", OAuthConstants.clientID)
                 }
             }
-            return response
-        }catch (e: Exception){
+//            return response
+            return response.data?.firstOrNull()
+        } catch (e: Exception) {
             e.printStackTrace()
-            if (e is ClientRequestException && e.response?.status?.value == 401){
+            if (e is ClientRequestException && e.response?.status?.value == 401) {
                 throw UnauthorizedException
             }
             null
@@ -98,7 +99,7 @@ class TwitchApiService(private val httpClient: HttpClient) {
 
     @Throws(UnauthorizedException::class)
     suspend fun updateUserDescription(description: String): User? {
-        val users = withContext(Dispatchers.IO){
+        val users = withContext(Dispatchers.IO) {
             return@withContext try {
                 httpClient.put<UserResponse>(Endpoints.userTwitch) {
                     parameter("description", description)
@@ -106,9 +107,9 @@ class TwitchApiService(private val httpClient: HttpClient) {
                         append("Client-Id", OAuthConstants.clientID)
                     }
                 }
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 e.printStackTrace()
-                if (e is ClientRequestException && e.response?.status?.value == 401){
+                if (e is ClientRequestException && e.response?.status?.value == 401) {
                     throw UnauthorizedException
                 }
                 null
@@ -122,7 +123,7 @@ class TwitchApiService(private val httpClient: HttpClient) {
 
     /// Gets Current Authorized User on Twitch
     @Throws(UnauthorizedException::class)
-    suspend fun revoke(accessToken: String){
+    suspend fun revoke(accessToken: String) {
         // TODO("Update User Description on Twitch")
         httpClient.post<UserResponse>(Endpoints.revokeTokensTwitch) {
             header("client_id", OAuthConstants.clientID)

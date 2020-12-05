@@ -24,12 +24,11 @@ object Network {
 
     private const val TAG = "Network"
     fun createHttpClient(context: Context): HttpClient {
-        //val context = context
         val accessToken = SessionManager(context).getAccessToken()
 
         return HttpClient(OkHttp) {
             // Setup HttpClient
-            install(JsonFeature){
+            install(JsonFeature) {
                 serializer = KotlinxSerializer(json)
             }
             // Logging
@@ -59,9 +58,6 @@ object Network {
             HttpResponseValidator {
                 validateResponse { response ->
                     val statusCode = response.status.value
-//                    when (statusCode) {
-//                        in 400..499 -> throw ClientRequestException(response)
-//                    }
                     if (statusCode == 401) {
                         //throw ResponseException(response)
                         renewToken(context)
@@ -77,10 +73,10 @@ object Network {
         encodeDefaults = false
     }
 
-    private suspend fun renewToken(context: Context){
+    private suspend fun renewToken(context: Context) {
         val instanceClient = createHttpClient(context)
         val service = TwitchApiService(instanceClient)
-        val sessionManager = SessionManager(context )
+        val sessionManager = SessionManager(context)
         sessionManager.clearAccessToken()
         try {
             sessionManager.getRefreshToken()?.let {
@@ -91,13 +87,13 @@ object Network {
                     }
                 }
             }
-        }catch (e: ClientRequestException){
+        } catch (e: ClientRequestException) {
             // En caso de no poder obtener accessToken hago LogOut para que el usuario haga Login de nuevo
             logout(context)
         }
     }
 
-    private fun logout(context: Context){
+    private fun logout(context: Context) {
         val sessionManager = SessionManager(context)
         sessionManager.clearAccessToken()
         sessionManager.clearRefreshToken()
