@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/backgroundColor">
+    android:background="@color/backgroundColor"
+    android:onClick="updateUserDescription">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,7 +16,7 @@
         tools:context=".twitch.profile.ProfileActivity">
 
         <ImageView
-            android:id="@+id/imageView"
+            android:id="@+id/userImageView"
             android:layout_width="@dimen/profile_image_size"
             android:layout_height="@dimen/profile_image_size"
             tools:src="@mipmap/ic_launcher" />
@@ -24,21 +25,23 @@
             android:id="@+id/viewsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
             android:layout_marginTop="@dimen/margin_medium"
+            android:gravity="center"
             android:orientation="horizontal">
+
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                app:tint="@color/colorOnBackground"
                 android:layout_marginEnd="@dimen/margin_small"
-                android:src="@drawable/ic_eye"/>
+                android:src="@drawable/ic_eye"
+                app:tint="@color/colorOnBackground" />
+
             <TextView
                 android:id="@+id/viewsText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/colorOnBackground"
-                tools:text="100 Views"/>
+                tools:text="100 Views" />
         </LinearLayout>
 
         <TextView
@@ -68,6 +71,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/margin_medium"
+            android:onClick="updateUserDescription"
             android:text="@string/button_save_description" />
 
         <com.google.android.material.button.MaterialButton
@@ -76,6 +80,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/margin_medium"
+            android:onClick="logOut"
             android:text="@string/button_logout" />
 
         <ProgressBar

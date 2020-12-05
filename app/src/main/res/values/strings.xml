@@ -22,4 +22,13 @@
     <string name="error_streams">Error getting Streams</string>
     <string name="error_profile">Error getting Profile</string>
     <string name="error_profile_update">Error updating profile</string>
+
+    <!--    Custom-->
+    <string name="login_again">Es neceasrio hacer login de nuevo</string>
+    <string name="error_refresh_token">Ocurrió un error al refrescar el token</string>
+    <string name="no_description">No ha ingresado una descripcion</string>
+    <string name="description_success">Descripción actualizada correctamente</string>
+    <string name="image_error_load">Ocurrió un error al momento de cargar la imagen</string>
+    <string name="code_no_availabile">No code available</string>
+    <string name="no_request">No request</string>
 </resources>

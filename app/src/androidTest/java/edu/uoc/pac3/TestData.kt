@@ -3,7 +3,6 @@ package edu.uoc.pac3
 import android.content.Context
 import edu.uoc.pac3.data.SessionManager
 import edu.uoc.pac3.data.TwitchApiService
-import edu.uoc.pac3.data.network.Endpoints
 import edu.uoc.pac3.data.network.Network
 import edu.uoc.pac3.data.oauth.OAuthTokensResponse
 import io.ktor.client.*
